@@ -43,13 +43,9 @@ Create an automatic action named 'lookup_value', associated with object type
 
 ## Python setup
 
-The Resilient REST API is accessed with a helper module 'co3' that should be
-used for all Python client applications.  The 'co3' module is a part of the
-Resilient REST API utilities 'co3-api'.  Download and install that first,
-following its instructions.
-
-This application is built using the circuits library.  The 'resilient-circuits'
-framework should be downloaded and installed, following its instructions.
+This example uses the `resilient` library to access the Resilient REST API, and the
+`resilient-circuits` framework to handle Action Module messages.  Install these two
+modules first, following their instructions. 
 
 ## Building the Integration
 ```
@@ -67,7 +63,7 @@ python setup.py test -a "--resilient_email api_user@example.com --resilient_pass
 ```
 
 To run tests for this integration in all supported python versions with generated virtual environments, 
-copy the co3, resilient-circuits, and pytest\_resilient\_circuits packages to a pkgs directory and make them available to pip.
+copy the resilient, resilient-circuits, and pytest\_resilient\_circuits packages to a pkgs directory and make them available to pip.
 ```
 export PIP_FIND_LINKS=”/path/to/pkgs/"
 ```

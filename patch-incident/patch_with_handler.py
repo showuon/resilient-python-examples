@@ -5,14 +5,15 @@ Simple script to patch an incident where you want "smart" handling of patch conf
 add the supplied incident types to an incident, even if there's a conflicting change on the server.
 """
 from __future__ import print_function
-import co3 as resilient
 import json
+import resilient
 from six.moves import input
+
 
 class ExampleArgumentParser(resilient.ArgumentParser):
     def __init__(self, config_file=None):
         super(ExampleArgumentParser, self).__init__(config_file=config_file)
-    
+
         self.add_argument('--incid',
                           type=int,
                           required=True,
@@ -22,6 +23,7 @@ class ExampleArgumentParser(resilient.ArgumentParser):
                           required=True,
                           action='append',
                           help="The names of the incident types to add (you can supply multiple --itype arguments)")
+
 
 def main():
     """
@@ -94,9 +96,8 @@ Press the Enter key to continue''')
 
         assert set(itypes).issubset(new_itypes)
 
-    except resilient.co3.SimpleHTTPException as ecode:
+    except resilient.SimpleHTTPException as ecode:
         print("patch failed : {}".format(ecode))
 
 if __name__ == "__main__":
     main()
-

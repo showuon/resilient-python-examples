@@ -4,14 +4,16 @@
 Simple script to patch an incident, sending only certain values (not the entire incident).
 """
 from __future__ import print_function
-import co3 as resilient
+import resilient
+
 
 class ExampleArgumentParser(resilient.ArgumentParser):
     def __init__(self, config_file=None):
         super(ExampleArgumentParser, self).__init__(config_file=config_file)
-    
+
         self.add_argument('--incid', type=int, required=True, help="The incident ID to patch.")
         self.add_argument('--desc', required=True, help="The new description to set for the incident.")
+
 
 def main():
     """
@@ -53,9 +55,8 @@ Press the Enter key to continue''')
         # example.
         assert desc == client.get(uri)["description"]
 
-    except resilient.co3.SimpleHTTPException as ecode:
+    except resilient.SimpleHTTPException as ecode:
         print("patch failed : {}".format(ecode))
 
 if __name__ == "__main__":
     main()
-

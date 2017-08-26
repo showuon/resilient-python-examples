@@ -1,6 +1,6 @@
 # Gadget
 
-The `co3` module includes a command line utility __`gadget`__ that provides
+The `resilient` module includes a command line utility __`gadget`__ that provides
 general-purpose commands to access the Resilient REST API.  The `gadget`
 command line program illustrates the following:
 

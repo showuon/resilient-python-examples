@@ -1,15 +1,18 @@
 # -----------------------------------------------------------------------------
-# The 'new incident' action component
+# The 'multi_org_incident' action component
 # -----------------------------------------------------------------------------
 # These are the configuration options you need
-[addincident]
+[multi_org_incident]
+
 # The queue you're listening to
 queue=addincident
+
 # Credentials for the org where you would like to post incidents
 to_org_name=Resilient Systems Org 2
 to_org_address=https://192.168.56.101
 to_org_username=example2@example.com
 to_org_password=password2
-# whether or not to verify certificate
+
+# whether or not to verify TLS certificate
 # if you would like to verify a cert, change verify to the cert's path
 verify=False
