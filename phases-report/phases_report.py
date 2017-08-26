@@ -6,8 +6,6 @@
 from __future__ import print_function
 from __future__ import absolute_import
 
-import co3 as resilient
-import os
 import json
 import logging
 import time
@@ -15,10 +13,8 @@ import csv
 import argparse
 from datetime import datetime
 from calendar import timegm
+import resilient
 
-
-# The config file location should usually be set in the environment
-APP_CONFIG_FILE = os.environ.get("APP_CONFIG_FILE", "report.config")
 
 # Report times in hours, not milliseconds
 FACTOR = (60 * 60 * 1000)
@@ -63,9 +59,9 @@ class ReportArgumentParser(resilient.ArgumentParser):
                           nargs="*",
                           help="Specify one or more incident ids")
 
-    def parse_args(self, args=None, namespace=None):
-        args = super(ReportArgumentParser, self).parse_args(args, namespace)
-        return ReportOpts(self.config, vars(args))
+#    def parse_args(self, args=None, namespace=None):
+#        args = super(ReportArgumentParser, self).parse_args(args, namespace)
+#        return ReportOpts(self.config, vars(args))
 
 
 def valid_date(s):
@@ -160,7 +156,7 @@ def phases_report(opts, resilient_client):
         writer.writeheader()
 
         for incident in all_incidents(resilient_client, opts):
-            logger.info("Incident %s", incident["id"])
+            logger.info("Analysing history for incident %s", incident["id"])
             start_ts = incident["create_date"]
             last_ts = incident["create_date"]
             now_ts = int(time.time() * 1000)
@@ -212,7 +208,9 @@ def main():
     """main"""
 
     # Parse the commandline arguments and config file
-    parser = ReportArgumentParser(config_file=APP_CONFIG_FILE)
+    config = resilient.get_config_file()
+    print("Configuration file: {}".format(config))
+    parser = ReportArgumentParser(config_file=config)
     opts = parser.parse_args()
 
     # Create SimpleClient for a REST connection to the Resilient services

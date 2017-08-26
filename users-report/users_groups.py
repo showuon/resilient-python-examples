@@ -4,16 +4,11 @@
 """Report users and groups into a spreadsheet"""
 
 from __future__ import print_function
-import os
 import logging
-import co3 as resilient
 from datetime import datetime
+import resilient
 from openpyxl import Workbook
 from openpyxl.styles import Font
-
-
-# The config file location should usually be set in the environment
-APP_CONFIG_FILE = os.environ.get("APP_CONFIG_FILE", "report.config")
 
 
 def get_datetime(ts):
@@ -117,7 +112,9 @@ def main():
     """Main"""
 
     # Parse the commandline arguments and config file
-    parser = resilient.ArgumentParser(config_file=APP_CONFIG_FILE)
+    config = resilient.get_config_file()
+    print("Configuration file: {}".format(config))
+    parser = resilient.ArgumentParser(config_file=config)
     opts = parser.parse_args()
 
     # Create SimpleClient for a REST connection to the Resilient services
