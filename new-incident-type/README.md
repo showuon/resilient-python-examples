@@ -1,7 +1,10 @@
 New Incident Type
 =================
 
-Use Case:  User wants to create new Incident Types in Resilient automatically from
+This is an example of a simple Action Module component using the 'resilient-circuits' framework.
+
+Use Case:
+User wants to create new Incident Types in Resilient automatically from
 the New Incident Wizard screen for use with the incident they are creating. 
 
 An automatic rule is triggered when the user creates a new incident.  The action

@@ -1,6 +1,8 @@
 Create New Incident in Another Org
 ===================================
 
+This is an example of a simple Action Module component using the 'resilient-circuits' framework.
+
 
 Use Case: In some cases, a company will have multiple divisions involved
 in the handling of an incident. In Resilient, this often means one instance

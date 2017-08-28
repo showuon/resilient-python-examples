@@ -1,7 +1,11 @@
 Lookup in Local File from Resilient
 ===================================
 
-Use Case:  Lookup up the value of a Resilient incident field in a CSV
+This is an example of an installable Action Module component using the 'resilient-circuits' framework.
+
+
+Use Case:
+Lookup up the value of a Resilient incident field in a CSV
 file on the local file system and store the result in another field in
 that incident.  This automatic action is triggered whenever the
 specified field value changes.

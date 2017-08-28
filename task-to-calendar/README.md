@@ -1,17 +1,22 @@
-Email calendar entry for task due dates
-===================================
+# Email calendar entry for task due dates
 
-Use Case:   Tasks have due dates.  This custom action processor creates a .ics file with the due date for the task
-and emails the file to the owner of the task.  If the task does not have a due date, or there is not an owner, no action is taken.
+This is an example of a simple Action Module component using the 'resilient-circuits' framework.
+
+
+Use Case:
+Tasks have due dates.  This custom action processor creates a .ics file with the due date for the task and emails
+the file to the owner of the task.  If the task does not have a due date, or there is not an owner,  no action is taken.
 When the task does not have a due date, the event is created as a single day event.
 
 This integration can be run on the Resilient appliance or anywhere else.  
 The code is written in Python, and can be extended for your own purposes.
 
-Requires: Python version 2.7.x or 3.4.x or later.
-Requires: Resilient Server or hosted Application, version 27 or later.
+Requires:
+* Python version 2.7.x or 3.4.x or later.
+* Python libraries `resilient` and `resilient-circuits` installed.
+* Resilient Server or hosted Application, version 27 or later, with Action Module.
 
-## Resilient server setup
+## Resilient customizations
 
 You must configure the following customizations to the Resilient server.
 Open the Customization Settings menu, then:
@@ -30,7 +35,7 @@ Open the Rules tab.
 Create two automatic rules named 'taskcalendar' and 'DueDate change', associated with object type
 "Task".  Choose `taskcalendar` as the message destination. 
 
-For the rul 'taskcalendar' add condition
+For the rule 'taskcalendar', add condition
 "Owner is changed"
 ![Owner Change custom action](Documents/taskcalendar.png)
 
@@ -39,23 +44,14 @@ For the rule 'DueDate change' add condition
 
 ![Due Date Change custom action](Documents/duedatechange.png)
 
+---
+
 ## Python setup
 
-The Resilient REST API is accessed with a helper module 'co3' that should be
-used for all Python client applications.  The 'co3' module is a part of the
-Resilient REST API utilities 'co3-api'.  Download and install that first,
-following its instructions.
+Ensure that the `resilient` and `resilient-circuits` libraries are installed.
 
-This application is built using the circuits library.  The 'resilient-circuits'
-framework should be downloaded and installed, following its instructions.
 
-#### Installing the Integration
-
-Unpack the integration's files into the location where you will run them. The generic run.py script that is used for all circuits integrations can be found in the main examples directory.
-The resilient api, and resilient-circuits modules are also required, referr to the documentation for each of these modules.
-Create the `logs` directory that the log file will be written to
-
-## Configuring the Integration
+### Configuration Parameters
 
 The script reads configuration parameters from a file.
 The configuration file is named `app.config`, in the same
@@ -76,25 +72,12 @@ Within the 'taskcalendar' section the following information is required:
 * use_start_tls - Only include and set to True if using TLS, usually with port 587
 * use_ssl - Only include and set to True if using legacy SMTP over SSL, usually with port 465
 
-### Certificates
 
-If your Resilient server uses a self-signed TLS certificate, or some
-other certificate that is not automatically trusted by your machine,
-you need to tell the Python scripts that it should be trusted.
-To do this, download the server's TLS certificate into a file,
-e.g. from 'resilient.example.com' to a file 'cert.cer':
+### Running the example
 
-    mkdir -p ~/resilient/
-    openssl s_client -connect resilient.example.com:443 -showcerts < /dev/null 2> /dev/null | openssl x509 -outform PEM > ~/resilient/cert.cer
+In the current directory, run the custom action application with:
 
-Then specify the path to this certificate in the config file.
-
-
-## Running the example
-
-In the script directory, run the custom action application with:
-
-    python run.py
+    resilient-circuits run --componentsdir /<your_full_path>/task-to-calendar/components/
 
 The script will start running, and wait for messages.  When a task is assigned to a user, or when the due date of the task is changed, the
 action processor will be invoked.  If the task only has an owner assigned, then the event is considered a single day event. If there is a due date, then the event is created as a multi day event starting with the current day and ending on the due date.  If the due date is changed, a new event is sent, which will replace the original event in the calendar.  If the owner is changed, the new owner will get the invite.  The previous owner will NOT get an update to remove the event from the calendar.
