@@ -15,7 +15,7 @@ Parameters for the connection to Resilient can be specified on the
 command line, or using a configuration file.
 An example configuration file is provided (`app.config.example`).
 The configuration file is found by
-* the path indicated by environment variable `APP_CONFIF_FILE`, or
+* the path indicated by environment variable `APP_CONFIG_FILE`, or
 * `app.config` in the current directory, or
 * `app.config` in `~/.resilient`.
 
