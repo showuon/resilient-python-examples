@@ -61,7 +61,13 @@ class ExportArgumentParser(resilient.ArgumentParser):
 
         self.add_argument("--append-to-file",
                           default=default_append_to_file,
-                          help="Append incidents to file")
+                          help="Append incidents to file",
+                          action="store_true")
+
+        self.add_argument("-a",
+                          default=default_append_to_file,
+                          help="Append incidents to file",
+                          action="store_true")
 
     @staticmethod
     def _is_true(value):
@@ -166,7 +172,7 @@ class ExportContext(object):
         if not field:
             return False
 
-        if field.get("input_type") and (field.get("input_type") == "datetimepicker" or field.get("input_type") == "datepicker"):
+        if field.get("input_type") in ["datetimepicker", "datepicker"]:
             return True
 
         return False
@@ -385,6 +391,14 @@ class ExportContext(object):
         data_tables = self.client.get(path.format(incident["id"]))
         return self.process_datatables(data_tables)
 
+    def should_append(self):
+        if self.opts.get("append_to_file") is not None and self.opts.get("append_to_file") != False:
+            return True
+        elif self.opts.get("a") is not None and self.opts.get("a") != False:
+            return True
+
+        return False
+
     def export_data(self):
         """Formalize the export to JSON"""
 
@@ -408,7 +422,7 @@ class ExportContext(object):
         highest_last_modified = int(file_last_time)
 
         file_mode = "w"
-        if self.opts.get("append_to_file") is not None and self.opts.get("append_to_file") == "1":
+        if self.should_append():
             file_mode = "a"
 
         with open(filename, file_mode) as outfile:

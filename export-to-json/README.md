@@ -6,7 +6,7 @@ The "resilient-export-to-json" command takes in a filename which specifies what 
 
 When using the "last_modified_field_name" argument, which allows for incidents that were modified to be exported, the "resilient-export-to-json" command creates a hidden file called ".resilient_export_to_json_lastrun". When the command is run, the code finds the highest last modified time in all of the incidents, and exports it as a string to this temporary file. The next time the command is run, the "resilient-export-to-json" command reads in the file, and only exports incidents that are after this last modified time, allowing for the exportation of only modified incidents.
 
-To automatically append changed incidents to an existing file, specify "--append-to-file 1" as a command-line argument. This will open the export file to append, not write to, making it so when exporting changed incidents, a new line is added, rather than the file being deleted first.
+To automatically append changed incidents to an existing file, specify "--append-to-file" or "-a" as a command-line argument. This will open the export file to append, not write to, making it so when exporting changed incidents, a new line is added, rather than the file being deleted first.
 
 The "resilient-merge-incident-json" command allows for two JSON files, containing incident data exported by "resilient-export-to-json" to be merged together. The command takes in the first filename, second filename, and an output filename which is where merged data is exported to. The second specified file always has priority over the first (i.e if an incident is in both files, it will go with the incident in the second file).
 
