@@ -30,6 +30,9 @@ class ExportArgumentParser(resilient.ArgumentParser):
     def __init__(self, config_file=None):
         super(ExportArgumentParser, self).__init__(config_file=config_file)
 
+        default_append_to_file = self._is_true(self.getopt("resilient",
+                                                           "append_to_file")) or False
+
         self.add_argument('filename',
                           help="The JSON filename.")
 
@@ -55,6 +58,17 @@ class ExportArgumentParser(resilient.ArgumentParser):
 
         self.add_argument('--query',
                           help="Filename containing a query in JSON format.")
+
+        self.add_argument("--append-to-file",
+                          default=default_append_to_file,
+                          help="Append incidents to file")
+
+    @staticmethod
+    def _is_true(value):
+        if value:
+            return value.lower()[0] in ("1", "t", "y")
+        else:
+            return False
 
 
 def valid_date_or_days_ago(s):
@@ -142,17 +156,17 @@ class ExportContext(object):
     def get_field(self, objecttype, fieldname):
         """Find a field definition, by api-name"""
         try:
-            return self.fields[objecttype][fieldname]
+            return self.types[objecttype]["fields"][fieldname]
         except KeyError:
             return None
 
     def is_date(self, objecttype, fieldname):
-        """Checks the type of field"""        
+        """Checks the type of field"""
         field = self.get_field(objecttype, fieldname)
         if not field:
             return False
 
-        if field.get("input_type") and field.get("input_type") == "datetimepicker":
+        if field.get("input_type") and (field.get("input_type") == "datetimepicker" or field.get("input_type") == "datepicker"):
             return True
 
         return False
@@ -239,7 +253,11 @@ class ExportContext(object):
                     if column_name == "":
                         continue
 
-                    temp_row[column_name] = cell.get("value")
+                    value = cell.get("value")
+                    if self.is_date(table_name, column_name):
+                        value = convert_epoch_to_datetimestr(value, True)
+
+                    temp_row[column_name] = value
 
                 new_data_table[table_name].append(temp_row)
 
@@ -315,7 +333,7 @@ class ExportContext(object):
 
             full_incident = self.clean_schema(full_incident, "incident")
 
-            yield {"incident": full_incident, "last_modified_field": last_modified_field} 
+            yield {"incident": full_incident, "last_modified_field": last_modified_field}
 
     def get_tasks(self, incident):
         """Yield all the tasks"""
@@ -377,6 +395,10 @@ class ExportContext(object):
         # generators do not provide a length
         incident_count = 0
 
+        last_modified_field_name = self.opts.get("last_modified_field_name")
+        if last_modified_field_name is not None and self.is_date("incident", last_modified_field_name) is False:
+            raise Exception("Last Modified Field is not a datetime.")
+
         if os.path.isfile(LAST_RUN_FILE):
             with open(LAST_RUN_FILE, "r") as lastrun_file:
                 file_last_time = lastrun_file.read().replace("\n", "")
@@ -384,11 +406,16 @@ class ExportContext(object):
             file_last_time = 0
 
         highest_last_modified = int(file_last_time)
-        with open(filename, "w") as outfile:
+
+        file_mode = "w"
+        if self.opts.get("append_to_file") is not None and self.opts.get("append_to_file") == "1":
+            file_mode = "a"
+
+        with open(filename, file_mode) as outfile:
             incidents = self.get_incidents()
-            incidents_list = []
             for incident in incidents:
-                last_modified_time = incident.get("last_modified_field")
+                last_modified_time = incident.get("last_modified_field")  # Custom attribute we define
+
                 incident = incident.get("incident")
                 if incident.get("id") is None:
                     raise Exception("Incident data corrupted, \"id\" attribute is non-existent.")
@@ -399,7 +426,7 @@ class ExportContext(object):
                 incident["milestones"] = list(self.get_milestones(incident))
                 incident["artifacts"] = list(self.get_artifacts(incident))
                 incident["attachments"] = list(self.get_attachments(incident))
-                
+
                 data_tables = self.get_datatables(incident)
                 for data_table_name in data_tables:
                     incident[data_table_name] = data_tables[data_table_name]
@@ -407,10 +434,8 @@ class ExportContext(object):
                 if last_modified_time > highest_last_modified:
                     highest_last_modified = last_modified_time
 
-                incidents_list.append(incident)
-
-            json.dump({"incidents": incidents_list}, outfile)
-            outfile.write("\n")
+                json.dump({"incident": incident}, outfile)
+                outfile.write("\n")
 
         with open(LAST_RUN_FILE, "w") as outfile:
             epoch_time = highest_last_modified
