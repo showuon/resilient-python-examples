@@ -287,6 +287,8 @@ class ExportContext(object):
                     if type(value) == list:
                         for idx, val in enumerate(value):
                             value[idx] = self.get_field_value_name(table_name, column_name, val)
+                    elif type(value) == int:
+                        value = self.get_field_value_name(table_name, column_name, value)
 
                     temp_row[column_name] = value
 
@@ -414,6 +416,7 @@ class ExportContext(object):
         """Grabs datatables from REST API and processes them"""
         path = "/incidents/{}/table_data"
         data_tables = self.client.get(path.format(incident["id"]))
+        print(data_tables)
         return self.process_datatables(data_tables)
 
     def should_append(self):
