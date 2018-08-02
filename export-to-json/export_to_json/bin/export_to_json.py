@@ -234,6 +234,27 @@ class ExportContext(object):
 
         return ""
 
+    def get_field_value_name(self, tablename, column_name, valueid):
+        """Find the name of a value"""
+        column = self.types[tablename]["fields"][column_name]
+        if column is None:
+            return ""
+
+        values = column.get("values")
+        if values is None:
+            return ""
+
+        for value in values:
+            value_id = value.get("value")
+            if value_id is None:
+                continue
+
+            value_name = value.get("label")
+            if value_name is not None and valueid == value_id:
+                return value_name
+
+        return ""
+
     def process_datatables(self, datatables):
         """Process datatable info from API"""
         new_data_table = {}
@@ -262,6 +283,10 @@ class ExportContext(object):
                     value = cell.get("value")
                     if self.is_date(table_name, column_name):
                         value = convert_epoch_to_datetimestr(value, True)
+
+                    if type(value) == list:
+                        for idx, val in enumerate(value):
+                            value[idx] = self.get_field_value_name(table_name, column_name, val)
 
                     temp_row[column_name] = value
 
