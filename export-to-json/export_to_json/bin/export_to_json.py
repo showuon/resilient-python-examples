@@ -416,7 +416,6 @@ class ExportContext(object):
         """Grabs datatables from REST API and processes them"""
         path = "/incidents/{}/table_data"
         data_tables = self.client.get(path.format(incident["id"]))
-        print(data_tables)
         return self.process_datatables(data_tables)
 
     def should_append(self):
