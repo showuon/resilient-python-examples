@@ -207,11 +207,12 @@ class ExportContext(object):
                         datetimestr = convert_epoch_to_datetimestr(new_object[field_name], True)
                         new_object[field_name] = datetimestr
                 else:
+                    if new_object.get(prefix) is None:
+                        new_object[prefix] = {}
                     new_object[prefix][field_name] = target_object[prefix][field_name]
                     if should_convert_to_datetime:
                         datetimestr = convert_epoch_to_datetimestr(new_object[prefix][field_name], True)
                         new_object[prefix][field_name] = datetimestr
-
             except KeyError:
                 continue
 
@@ -361,10 +362,12 @@ class ExportContext(object):
 
             last_modified_field = 0
             properties = full_incident.get("properties")
-            if properties is not None and self.opts.get("last_modified_field_name") is not None:
-                last_modified_field = properties.get(self.opts.get("last_modified_field_name"))
 
             full_incident = self.clean_schema(full_incident, "incident")
+
+            if properties is not None:
+                if self.opts.get("last_modified_field_name") is not None:
+                    last_modified_field = properties.get(self.opts.get("last_modified_field_name"))
 
             yield {"incident": full_incident, "last_modified_field": last_modified_field}
 
@@ -446,7 +449,10 @@ class ExportContext(object):
         else:
             file_last_time = 0
 
-        highest_last_modified = int(file_last_time)
+        try:
+            highest_last_modified = int(file_last_time)
+        except ValueError:
+            raise Exception("Invalid timestamp in last run file.")
 
         file_mode = "w"
         if self.should_append():
@@ -458,7 +464,7 @@ class ExportContext(object):
                 last_modified_time = incident.get("last_modified_field")  # Custom attribute we define
 
                 incident = incident.get("incident")
-                if incident.get("id") is None:
+                if incident is None or incident.get("id") is None:
                     raise Exception("Incident data corrupted, \"id\" attribute is non-existent.")
 
                 incident_count += 1
