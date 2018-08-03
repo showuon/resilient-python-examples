@@ -20,13 +20,22 @@ class ExportArgumentParser(resilient.ArgumentParser):
                           help="The output JSON filename.")
 
 
-def get_json_from_file(filename):
+def get_incidents_from_file(filename):
     if os.path.isfile(filename):
-        with open(filename, "r") as json_file:
-            try:
-                return json.load(json_file)
-            except ValueError:
-                raise Exception(("Parsing file {} for JSON failed.".format(filename)))
+        incidents = []
+        with open(filename) as f:
+            for line in f:
+                try:
+                    line_json = json.loads(line)
+                except ValueError:
+                    raise Exception(("Parsing file {} for JSON failed.".format(filename)))
+
+                if line_json.get("incident") is None:
+                    raise Exception("Invalid JSON in file {}. Could not locate incident.".format(filename))
+
+                incidents.append(line_json.get("incident"))
+
+        return incidents
     else:
         raise Exception(("File {} not found.".format(filename)))
 
@@ -37,26 +46,24 @@ def main():
     parser = ExportArgumentParser(config_file=resilient.get_config_file())
     opts = parser.parse_args()
 
-    first_json = get_json_from_file(opts.get("first_json_file"))
-    second_json = get_json_from_file(opts.get("second_json_file"))
+    first_incidents = get_incidents_from_file(opts.get("first_json_file"))
+    second_incidents_array = get_incidents_from_file(opts.get("second_json_file"))
 
-    if first_json is None or second_json is None:
+    if first_incidents is None or second_incidents_array is None:
         raise Exception("Invalid file provided.")
 
-    if first_json.get("incidents") is None or second_json.get("incidents") is None:
-        raise Exception("Invalid JSON provided, incidents object not found.")
+    if os.path.isfile(opts.get("output_json_file")):
+        os.remove(opts.get("output_json_file"))
 
-    first_incidents = first_json.get("incidents")
-
-    second_incidents_array = second_json.get("incidents")
     second_incidents = []
 
     for incident in second_incidents_array:
         incident_id = incident.get("id")
         if incident_id is not None:
             second_incidents.append(incident_id)
-
-    incidents = []
+            with open(opts.get("output_json_file"), "a") as outfile:
+                json.dump({"incident": incident}, outfile)
+                outfile.write("\n")
 
     for incident in first_incidents:
         incident_id = incident.get("id")
@@ -66,13 +73,9 @@ def main():
 
         # if the incident already exists, we don't want to add it
         if incident_id not in second_incidents:
-            incidents.append(incident)
-
-    incidents += second_incidents_array
-
-    with open(opts.get("output_json_file"), "w") as outfile:
-        json.dump({"incidents": incidents}, outfile)
-        outfile.write("\n")
+            with open(opts.get("output_json_file"), "a") as outfile:
+                json.dump({"incident": incident}, outfile)
+                outfile.write("\n")
 
     print("Successfully merged JSON files into {}.".format(opts.get("output_json_file")))
 
