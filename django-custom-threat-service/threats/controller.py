@@ -38,7 +38,6 @@ def search_artifacts(search_type, search_value, spawn_searches_from_other_source
     else:
         async_searchers = []
         sync_searchers = [InternalArtifactSearch]
-
     hits = []
     for searcher in sync_searchers:
         if searcher.supports(search_type):
@@ -112,7 +111,7 @@ class BaseArtifactSearch(object):
 
         def key_name(key_object, fields):
             """ build the key_name from the concatenation of field values to identify duplicates """
-            field_values = [unicode(getattr(key_object, field)) for field in fields]
+            field_values = [str(getattr(key_object, field)) for field in fields]
             return "_".join(field_values)
 
         def new_threat_child(data_obj, threat, object_type, fields, existing):
@@ -216,11 +215,8 @@ class SearchContext(object):
     def __getstate__(self):
         pickle_dictionary = self.__dict__.copy()
         if self.type == "file.content":
-            if isinstance(self.value, TemporaryUploadedFile):
-                with open(self.value.temporary_file_path(), "r") as temp_file:
-                    file_data = temp_file.read()
-            else:
-                file_data = self.value.read()
+            self.value.seek(0)
+            file_data = self.value.read()
 
             # File data info, especially useful for test pickling
             self.file_data_len = len(file_data)
@@ -233,7 +229,6 @@ class SearchContext(object):
                 "charset": self.value.charset,
                 "content": base64.b64encode(file_data),
             }
-
         return pickle_dictionary
 
     def __setstate__(self, pickle_dictionary):
@@ -243,7 +238,6 @@ class SearchContext(object):
 
             # File data info, especially useful for test pickling
             self.base64_file_data_len = len(arguments["content"])
-
             file_content = base64.b64decode(arguments.pop("content"))
 
             # File data info, especially useful for test pickling

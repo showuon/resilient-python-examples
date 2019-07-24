@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
+import django
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -23,9 +24,12 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '5m*8tuyjgpr65cutpg&96bzm!hsab840c!43rygj74rd6u7h_3'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+# provide the value of the host that can be accepted. Prevents HTTP Host header attacks
+# add localhost of appliance '192.168.xx.1' to allowed hosts
+
+ALLOWED_HOSTS = ["127.0.0.1", 'localhost']
 
 
 # Application definition
@@ -47,12 +51,11 @@ LOCAL_APPS = (
 
 INSTALLED_APPS = DEFAULT_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
-MIDDLEWARE_CLASSES = (
+MIDDLEWARE = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -120,9 +123,13 @@ THREAD_POOL_SIZE = 3
 
 SUPPORT_UPLOAD_FILE = True
 
+# Fini
+django.setup()
+
 # List artifact searchers from which to find sources
 # Configure searchers to execute either synchronously or asyncronously
 # Include InternalArtifactSearch in SYNC_SEARCHERS to get known results back in initial call
+
 from threats.controller import InternalArtifactSearch
 from sources.phish_tank import PhishTankArtifactSearch
 SYNC_SEARCHERS = [InternalArtifactSearch]

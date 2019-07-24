@@ -37,11 +37,11 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='property',
             name='threat',
-            field=models.ForeignKey(related_name='props', to='threats.Threat'),
+            field=models.ForeignKey(related_name='props', to='threats.Threat', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='artifact',
             name='threat',
-            field=models.ForeignKey(related_name='artifacts', to='threats.Threat'),
+            field=models.ForeignKey(related_name='artifacts', to='threats.Threat', on_delete=models.CASCADE),
         ),
     ]

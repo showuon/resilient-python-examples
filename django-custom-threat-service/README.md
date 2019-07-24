@@ -2,9 +2,9 @@
 
 This sample serves to illustrate how to go about writing a service that meets the criteria for a Custom Threat Service which can be integrated into an IBM Resilient Incident Response Platform installation. The calls that the Resilient platform makes to this service (or others like it) are documented in the Custom Threat Service Integration Guide, included in the package.
 
-## Technologies Used
+## Technologies Used and Compatibility
 
-The sample is written in Python using Django and the Django REST Framework (DRF).
+The sample is written in `Python3` using `Django` and the `Django REST Framework (DRF)`.
 
 The core code lies in the `threats` app which searches sources of threat information and adds them into its database. The initial response contains any responses previously collected from the local database immediately, and spawns any other sources registered to search their information store asynchronously and insert any newly found information into the local database. _The local database exists as a repository for any information collected, and data that remains in there after a call simply serves as a cache of the results collected from prior jobs._
 
@@ -24,12 +24,19 @@ e.g.
 
 1. Fetch the sources and change your working directory to the `custom_threat_service` top-level directory.
 2. Install the dependencies using `$ pip install -r requirements.txt`
-3. Create your database by running `$ ./manage.py syncdb`
-    _Notice that standard django admin/authentication apps are in place to allow records to be inserted manually locally for testing purposes_
+3. Create your database by running 
+    ```
+    $ ./manage.py makemigrations
+    $ ./manage.py migrate
+    ```
+    *Notice that standard django admin/authentication apps are in place to allow records to be inserted manually locally for testing purposes*
 4. Make sure your environment is ready by running the tests,  `$ ./manage.py test`
-5. Run the server using the command `$ ./manage.py runserver` _(assuming the tests pass in step 4)_
+5. Update `ALLOWED_HOSTS` in `custom_threat_service/setting.py` to include the addresses of the interfaces through
+ which the application could be accessed.
+6. Run the server using the command `$ ./manage.py runserver` _(assuming the tests pass in step 4)_
 
-The server is configured to run http on port 8000. To run on a different port, pass the port number in the command line - e.g. to run the server on port 4000 execute `./manage.py runserver 4000`
+*The server is configured to run http on port 8000. To run on a different port, pass the port number in the command line - e.g. to run the server on port 4000 execute `./manage.py runserver 4000`.
+You can listen on all interfaces by executing `./manage.py runserver 0.0.0.0:<port #>`.
 
 With the help of DRF, you can also make test requests to the service via a browser - navigate to http://localhost:8000, DRF wraps the calls around a user interface in order to aid debugging at the endpoint level.
 
@@ -42,7 +49,6 @@ $ curl 'http://localhost:8000/artifact_id'
 
 (Replace `artifact_id` in the 3rd call with the id returned from the 2nd call)
 
-
 ### Resilient Configuration
 
 To register the custom threat service on the Resilient platform, run the following command from the Resilient console:
@@ -53,6 +59,9 @@ sudo resutil threatserviceedit \
     -user <authorization user name> \
     -password <authorization password>
 ```
+Trailing slash is required for `resturl` at the end of the URL. For example, if the custom threat service runs on machine accessible at
+`192.168.56.1` and port `8080`, resturl has to be `http://192.168.56.1:8080/`.
+
 The user and password parameters are optional. You only need to specify them if you have enabled Basic Auth in your custom threat service implementation.
 
 After you install the custom threat service, run the following command to test that it is installed correctly and that the Resilient platform can communicate with your custom threat service.
@@ -74,7 +83,7 @@ Finally, to enable queries against your custom threat service, enable the servic
 
 Once you have confirmed that the service works, it needs to be deployed into an environment that supports adding ssl and basic authentication if desired. More importantly, the test django server does not support `Transfer-Encoding: chunked`; therefore, we host python inside a web server that supports it. 
 
-There are many ways to host Python in process pooled environments, one example is `uwsgi` - The following is an example of how to run the service using uwsgi:
+There are many ways to host Python in process pooled environments, one example is `uwsgi` - The following is 2 examples of how to run the service using uwsgi. It's import to note that thes paths will change depending on your local environment :
 
 ```
 /home/users/username/.virtualenvs/CustomThreadService/bin/uwsgi --http :8000 \
@@ -82,7 +91,12 @@ There are many ways to host Python in process pooled environments, one example i
 --module custom_threat_service.wsgi
 ```
 
-_Notice that we can use the specific version of `uwsgi` within the virtual environment; there are other ways to deploy that allow more choices for deployment - example tutorials can be found within the [uwsgi documentation ](http://uwsgi-docs.readthedocs.org/en/latest/tutorials/Django_and_nginx.html) and at [digitalocean.com](https://www.digitalocean.com/community/tutorials/how-to-serve-django-applications-with-uwsgi-and-nginx-on-ubuntu-14-04) for reference purposes_
+```
+~/envs/django3/bin/uwsgi --http :8000 --home ~/envs/django3 \
+--module custom_threat_service.wsgi
+```
+
+Notice that we can use the specific version of `uwsgi` within the virtual environment; there are other ways to deploy that allow more choices for deployment - example tutorials can be found within the [uwsgi documentation ](http://uwsgi-docs.readthedocs.org/en/latest/tutorials/Django_and_nginx.html) and at [digitalocean.com](https://www.digitalocean.com/community/tutorials/how-to-serve-django-applications-with-uwsgi-and-nginx-on-ubuntu-14-04) for reference purposes_
 
 #### nginx.conf for custom_threat_service
 

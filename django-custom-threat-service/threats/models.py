@@ -63,7 +63,7 @@ class Artifact(models.Model):
     """
     This model represents a single artifact facet to a threat instance
     """
-    threat = models.ForeignKey(Threat, related_name="artifacts")
+    threat = models.ForeignKey(Threat, related_name="artifacts", on_delete=models.CASCADE)
 
     type = models.CharField(max_length=32, choices=ARTIFACT_TYPE_CHOICES)
     value = models.TextField()
@@ -78,7 +78,7 @@ class Property(models.Model):
     """
     This model represents properties of an identified threat record
     """
-    threat = models.ForeignKey(Threat, related_name="props")
+    threat = models.ForeignKey(Threat, related_name="props", on_delete=models.CASCADE)
 
     type = models.CharField(max_length=32, choices=PROPERTY_TYPE_CHOICES)
     name = models.CharField(max_length=80)

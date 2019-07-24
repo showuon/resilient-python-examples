@@ -52,8 +52,16 @@ class TestSearchContextCache(TestCase):
         self.assertEqual(context.id, loaded_context.id)
 
     def test_file_context(self):
-        with open("threats/test_data/boss.gif", "r") as boss_reader:
+        response = None
+
+        with open("threats/test_data/boss.gif", "rb") as boss_reader:
             file_data = boss_reader.read()
+            boss_reader.seek(0)
+            response = self.client.post(
+                '/',
+                {'artifact': '{"type": "file.content"}', 'file': boss_reader},
+                format="multipart"
+            )
 
         upload_file_args = {
             "name": "boss.gif",
@@ -62,11 +70,13 @@ class TestSearchContextCache(TestCase):
             "charset": None,
         }
 
+        self.assertEqual(response.status_code, 200)
+
         temp_file = TemporaryUploadedFile(**upload_file_args)
         temp_file.write(file_data)
         temp_file.flush()
 
-        context = SearchContext({"type": "file.content", "value": temp_file, })
+        context = SearchContext({"type": "file.content", "value": temp_file})
         context.save()
 
         self.assertEqual(context.file_data_len, len(file_data))
@@ -75,10 +85,10 @@ class TestSearchContextCache(TestCase):
         self.assertEqual(loaded_context.base64_file_data_len, context.base64_file_data_len)
         self.assertEqual(loaded_context.file_data_len, context.file_data_len)
 
-        with open(loaded_context.value.temporary_file_path(), "r") as temp_file:
+        with open(loaded_context.value.temporary_file_path(), "rb") as temp_file:
             loaded_file_data = temp_file.read()
 
-        for counter in range(0, len(loaded_file_data) / 100):
+        for counter in range(0, len(loaded_file_data) // 100):
             begin = counter * 100
             end = begin + 100
             self.assertEqual(file_data[begin:end], loaded_file_data[begin:end])
@@ -150,12 +160,12 @@ class TestFileContentArtifactSearch(BaseArtifactSearch):
 
     @classmethod
     def search(cls, artifact_type, search_term, **kwargs):
-        """ The "search_term" is a file """
+        """ The "search_term" is a binary file """
         search_term.seek(0)
         file_content = search_term.read()
 
         threat = None
-        if "bad" in file_content:
+        if "bad".encode() in file_content:
             properties = [
                 {"name": "file_name", "type": "string", "value": search_term.name, },
                 {"name": "file_size", "type": "number", "value": search_term.size, },
@@ -556,7 +566,7 @@ class APIClientTest(JsonTestCase):
                         format="multipart"
                     )
             finally:
-                my_file.unlink(my_file.name)
+                my_file.close()
 
             file_name = None
             if my_file:
@@ -564,11 +574,11 @@ class APIClientTest(JsonTestCase):
 
             return response, file_name
 
-        threat_file_content = u"ABC, it's easy as 123"
+        threat_file_content = "ABC, it's easy as 123"
         response, _ = post_file_and_artifact(threat_file_content)
         self.assertEqual(len(response.data["hits"]), 0)
 
-        threat_file_content = u"ABC, it's as bad as 123"
+        threat_file_content = "ABC, it's as bad as 123"
         response, file_name = post_file_and_artifact(threat_file_content)
         self.assertEqual(len(response.data["hits"]), 1)
 
@@ -708,7 +718,7 @@ class APIClientTest(JsonTestCase):
                     format="multipart"
                 )
         finally:
-            my_file.unlink(my_file.name)
+            my_file.close()
 
         self.assertFalse(response is None)
         self.assertEqual(response.status_code, 200)
