@@ -10,7 +10,7 @@ The core code lies in the `threats` app which searches sources of threat informa
 
 Subsequent searches with matched id (as returned by the initial search) exclusively gather their information from the local database - as more data is populated by the threaded operations from the other sources.
 
-In this example, we have one threat-source built (in `sources` app) which searches known phishing-sites information within the `verified_online.csv` file. Currently this is a sample file in the same format as is freely downloadable from phishtank.com. _See the section '[Phish Tank Searcher]' below._
+In this example, we have one threat-source built (in `sources` app) which searches known phishing-sites information within the `verified_online.csv` file. Currently this is a sample file in the same format as is freely downloadable from phishtank.com. _See the section [Phish Tank Searcher](#phish-tank-searcher) below._
 
 _The local database is configured as a sqlite database, but you can change the database engine to any supported by the Django framework by editing/overriding the `DATABASES` setting._
 
@@ -83,7 +83,7 @@ Finally, to enable queries against your custom threat service, enable the servic
 
 Once you have confirmed that the service works, it needs to be deployed into an environment that supports adding ssl and basic authentication if desired. More importantly, the test django server does not support `Transfer-Encoding: chunked`; therefore, we host python inside a web server that supports it. 
 
-There are many ways to host Python in process pooled environments, one example is `uwsgi` - The following is 2 examples of how to run the service using uwsgi. It's import to note that thes paths will change depending on your local environment :
+There are many ways to host Python in process pooled environments, one example is `uwsgi` - The following is 2 examples of how to run the service using uwsgi. It's import to note that these paths will change depending on your local environment :
 
 ```
 /home/users/username/.virtualenvs/CustomThreadService/bin/uwsgi --http :8000 \
@@ -96,7 +96,7 @@ There are many ways to host Python in process pooled environments, one example i
 --module custom_threat_service.wsgi
 ```
 
-Notice that we can use the specific version of `uwsgi` within the virtual environment; there are other ways to deploy that allow more choices for deployment - example tutorials can be found within the [uwsgi documentation ](http://uwsgi-docs.readthedocs.org/en/latest/tutorials/Django_and_nginx.html) and at [digitalocean.com](https://www.digitalocean.com/community/tutorials/how-to-serve-django-applications-with-uwsgi-and-nginx-on-ubuntu-14-04) for reference purposes_
+Notice that we can use the specific version of `uwsgi` within the virtual environment; there are other ways to deploy that allow more choices for deployment - example tutorials can be found within the [uwsgi documentation ](http://uwsgi-docs.readthedocs.org/en/latest/tutorials/Django_and_nginx.html) and at [digitalocean.com](https://www.digitalocean.com/community/tutorials/how-to-serve-django-applications-with-uwsgi-and-nginx-on-ubuntu-14-04) for reference purposes.
 
 #### nginx.conf for custom_threat_service
 
